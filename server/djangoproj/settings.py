@@ -1,32 +1,13 @@
-"""
-Django settings for djangoproj project.
-"""
-
 import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-ccow$tz_=9%dxu4(0%^(z%nx32#s@(zt9$ih@)5l54yny)wm-0'
-
+SECRET_KEY = 'django-insecure-key'
 DEBUG = True
 
+ALLOWED_HOSTS = []
 
-ALLOWED_HOSTS = [
-    'localhost',
-    'vbps271-8000.theianext-0-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai'
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://vbps271-8000.theianext-0-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai'
-]
-
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [],
-}
-
-# APPS
 INSTALLED_APPS = [
     'djangoapp.apps.DjangoappConfig',
     'django.contrib.admin',
@@ -37,26 +18,24 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
-# MIDDLEWARE
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'djangoproj.urls'
 
-# TEMPLATES (FIXED)
+# HÄR ÄR HELA FIXEN
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-
-        # FIX: rätt plats för frontend
-        'DIRS': [os.path.join(BASE_DIR, 'frontend/static')],
-
+        'DIRS': [
+            os.path.join(BASE_DIR, 'frontend/static'),
+            os.path.join(BASE_DIR, 'frontend/build'),   # 🔥 DETTA SAKNAS HOS DIG
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,7 +50,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'djangoproj.wsgi.application'
 
-# DATABASE
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -79,39 +57,12 @@ DATABASES = {
     }
 }
 
-# PASSWORD VALIDATION
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-# INTERNATIONAL
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_L10N = True
-USE_TZ = True
-
-# STATIC FILES (FIXAD)
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
-MEDIA_URL = '/media/'
 
-# RÄTT CONFIG
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/static')
+    os.path.join(BASE_DIR, 'frontend/static'),
+    os.path.join(BASE_DIR, 'frontend/build/static'),
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
