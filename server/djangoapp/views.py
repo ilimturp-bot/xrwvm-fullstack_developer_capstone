@@ -15,6 +15,8 @@ from django.views.decorators.csrf import csrf_exempt
 import logging
 import json
 
+from .restapis import get_request, analyze_review_sentiments, post_review
+
 logger = logging.getLogger(__name__)
 
 
@@ -36,31 +38,23 @@ def login_user(request):
 
 def logout_request(request):
     logout(request)
-    data = {"userName": ""}
-    return JsonResponse(data)
+    return JsonResponse({"userName": ""})
 
 
 @csrf_exempt
 def registration(request):
-    context = {}
-
     data = json.loads(request.body)
+
     username = data["userName"]
     password = data["password"]
     first_name = data["firstName"]
     last_name = data["lastName"]
     email = data["email"]
 
-    username_exist = False
-    email_exist = False
-
     try:
         User.objects.get(username=username)
-        username_exist = True
+        return JsonResponse({"userName": username, "error": "Already Registered"})
     except:
-        logger.debug("{} is new user".format(username))
-
-    if not username_exist:
         user = User.objects.create_user(
             username=username,
             first_name=first_name,
@@ -69,8 +63,51 @@ def registration(request):
             email=email
         )
         login(request, user)
-        data = {"userName": username, "status": "Authenticated"}
-        return JsonResponse(data)
+        return JsonResponse({"userName": username, "status": "Authenticated"})
+
+
+def get_dealerships(request, state="All"):
+    if(state == "All"):
+        endpoint = "/fetchDealers"
     else:
-        data = {"userName": username, "error": "Already Registered"}
-        return JsonResponse(data)
+        endpoint = "/fetchDealers/" + state
+
+    dealerships = get_request(endpoint)
+    return JsonResponse({"status":200, "dealers":dealerships})
+
+
+def get_dealer_details(request, dealer_id):
+    if(dealer_id):
+        endpoint = "/fetchDealer/" + str(dealer_id)
+        dealership = get_request(endpoint)
+        return JsonResponse({"status":200, "dealer":dealership})
+    else:
+        return JsonResponse({"status":400})
+
+
+def get_dealer_reviews(request, dealer_id):
+    if(dealer_id):
+        endpoint = "/fetchReviews/dealer/" + str(dealer_id)
+        reviews = get_request(endpoint)
+
+        for review_detail in reviews:
+            sentiment = analyze_review_sentiments(review_detail['review'])
+            review_detail['sentiment'] = sentiment['sentiment']
+
+        return JsonResponse({"status":200, "reviews":reviews})
+    else:
+        return JsonResponse({"status":400})
+
+
+# NY FUNKTION (DETTA VAR STEGET DU ÄR PÅ)
+@csrf_exempt
+def add_review(request):
+    if(request.user.is_anonymous == False):
+        data = json.loads(request.body)
+        try:
+            response = post_review(data)
+            return JsonResponse({"status":200})
+        except:
+            return JsonResponse({"status":401, "message":"Error in posting review"})
+    else:
+        return JsonResponse({"status":403, "message":"Unauthorized"})
